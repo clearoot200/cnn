@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>スケジュール確認</title>
+        <meta http-equiv="content-type" charset="utf-8">
+        <?php
+        session_start();
+        require_once("common.php");
+
+        loginCheck();
+
+        if(isset($_GET["datetime"])&&isset($_GET["place"])&&isset($_GET["event"])&&isset($_GET["subject"])){
+            $pdo = DBConnection();
+            $st = $pdo->prepare("SELECT * FROM schedule WHERE plan=? AND place=? AND event=? AND subject=?");
+    
+            $st->execute(array($_GET["datetime"], $_GET["place"], $_GET["event"], $_GET["subject"]));
+            while($row = $st->fetch()){
+                $year = date("Y", strtotime(h($row["plan"])));
+                $month = date("m", strtotime(h($row["plan"])));
+                $day = date("d", strtotime(h($row["plan"])));
+                $place= h($row["place"]);
+                $event = h($row["event"]);
+                $subject = h($row["subject"]);
+                $remark = h($row["remark"]);
+            }
+        } else {
+            header("location: calender.html");
+        }
+        ?>
+    </head>
+    <body>
+        <h2>スケジュール確認</h2>
+        <p><button type="button" onclick="history.back()">戻る</button></p>
+        <form action="update.php" method="post">
+            <h5>日時</h5>
+            <p><select name="year">
+            <?php
+                $year = date("Y");
+                $maxYear = 10;
+    
+                for($i = $year - 5;$i < $maxYear + $year; $i++){
+                    print("<option value=\"".$i."\"".(($i == $year) ? " selected" : "").">".$i."</option>\n");
+                }
+            ?>
+            </select>年
+            <select name="month">
+            <?php
+               $maxMonth = 12;
+    
+                for($i = 1;$i <= $maxMonth; $i++){
+                    print("<option value=\"".$i."\"".(($i == $month) ? " selected" : "").">".$i."</option>\n");
+                }
+            ?>
+            </select>月
+            <select name="day">
+            <?php
+                $maxDay = 31;
+            
+                for($i = 1;$i <= $maxDay; $i++){
+                    print("<option value=\"".$i."\"".(($i == $day) ? " selected" : "").">".$i."</option>\n");
+                }
+            ?>
+            </select>日
+            </p>
+            <h5>場所</h5>
+                <?php print("<p><input type=\"text\" name=\"place\" value=\"".h($place)."\"></p>\n"); ?>
+            <h5>イベント</h5>
+                <?php print("<p><input type=\"text\" name=\"event\" value=\"".h($event)."\"></p>\n"); ?>
+            <h5>件名</h5>
+                <?php print("<p><input type=\"text\" name=\"subject\" value=\"".h($subject)."\"></p>\n"); ?>
+            <h5>メモ</h5>
+                <?php print("<p><textarea type=\"comment\" cols=\"50\" row=\"5\" name=\"remark\">".h($remark)."</textarea><br></p>\n"); ?>
+                <?php 
+                    print("<input type=\"hidden\" name=\"olddatetime\" value=\"".$year.sprintf("-%02d",$month).sprintf("-%02d",$day)."\">\n");
+                    print("<input type=\"hidden\" name=\"oldplace\" value=\"".$place."\">\n");
+                    print("<input type=\"hidden\" name=\"oldevent\" value=\"".$event."\">\n");
+                    print("<input type=\"hidden\" name=\"oldsubject\" value=\"".$subject."\">\n");
+                    print("<input type=\"hidden\" name=\"oldremark\" value=\"".$remark."\">\n");
+                ?>
+                <p><input type="submit" name="update" value="変更"></p>
+                <p><input type="submit" name="delete" value="削除"></p>
+        </form>
+        <form action="delete.php" method="post">
+            <?php 
+                print("<input type=\"hidden\" name=\"deletedatetime\" value=\"".$year.sprintf("-%02d",$month).sprintf("-%02d",$day)."\">\n");
+                print("<input type=\"hidden\" name=\"deleteplace\" value=\"".$place."\">\n");
+                print("<input type=\"hidden\" name=\"deleteevent\" value=\"".$event."\">\n");
+                print("<input type=\"hidden\" name=\"deletesubject\" value=\"".$subject."\">\n");
+                print("<input type=\"hidden\" name=\"deleteremark\" value=\"".$remark."\">\n");
+            ?>
+        </form>
+    </body>
+</html>

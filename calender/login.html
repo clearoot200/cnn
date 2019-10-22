@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>ログイン</title>
+        <meta http-equiv="content-type" charset="utf-8">
+    </head>
+    <body>
+        <?php
+            session_start();
+
+            $_SESSION = array();
+
+            session_destroy();
+        ?>
+        <h2>ログイン</h2>
+        <form action="login.php" method="POST">
+            <h5>ID</h5>
+            <p><input type="text" name="userid"></p>
+            <h5>password</h5>
+            <p><input type="password" name="password"></p>
+            <p><input type="submit" value="ログイン"></p>
+        </form>
+    </body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>カレンダー</title>
+        <meta http-equiv="content-type" charset="utf-8">
+        <?php
+        session_start();
+        require_once("common.php");
+        
+        loginCheck();
+
+        // 余計なセッションを削除
+        if(isset($_SESSION["errorMessage"])){
+          unset($_SESSION["errorMessage"]);
+        }
+
+        // データベースの準備
+        try{
+          $pdo = DBConnection();
+        } catch(Exception $e) {
+          print("エラー：" . $e->getMessage());
+        }
+        ?>
+    </head>
+    <body>
+        <h2>スケジュール</h2>
+        <p><a href="login.html">ログアウト</a></p>
+        <?php
+          if(strcmp($_SESSION["name"],"root") === 0) {
+            print("<p><a href=\"./userregist.html\">ユーザー登録</a></p>");
+          }
+        ?>
+        <p><a href="./schedule.html">スケジュール登録</a></p>
+        <?php
+        // カレンダーの生成
+        if(isset($_GET["printYear"])){
+          $year = $_GET["printYear"];
+        } else {
+          $year = date("Y");
+        }
+        
+        if(isset($_GET["printMonth"])){
+          $month = $_GET["printMonth"];
+        } else {
+          $month = date("n");
+        }
+        $nowMonth = date($year."年".$month."月");
+
+        print("<h2>".$nowMonth."</h2>\n");
+        ?>
+        <table>
+          <tr>
+          <td>
+          <form action="calender.html" method="get">
+            <?php
+              print("<input type=\"hidden\" name=\"printYear\" value=\"".((($month - 1) < 1) ? ($year - 1) : $year)."\">\n");
+              print("<input type=\"hidden\" name=\"printMonth\" value=\"".((($month - 1) < 1) ? 12 : ($month - 1))."\">\n");
+            ?>
+            <input type="submit" value="前の月">
+          </form>
+          </td>
+          <td>
+          <form action="calender.html" method="get">
+            <?php
+              print("<input type=\"hidden\" name=\"printYear\" value=\"".((($month + 1) > 12) ? ($year + 1) : $year)."\">\n");
+              print("<input type=\"hidden\" name=\"printMonth\" value=\"".((($month + 1) > 12) ? 1 : ($month + 1))."\">\n");
+            ?>
+            <input type="submit" value="次の月">
+          </form>
+          </td>
+          </tr>
+        </table>
+        <?php
+        print("<table style=\"table-layout:fixed;\" width=\"90%\" border=\"1\">\n");
+        print("<tr>\n");
+        print("<th>Sun</th><th>Mon</th><th>Tue</th><th>Web</th><th>Thu</th><th>Fry</th><th>Sat</th>\n");
+        print("</tr>\n");
+        print("<tr>\n");
+
+        $lastDay = getLastDay($month, $year);
+        $lastWeek = getDayOfTheWeek($month, 1, $year);
+
+        for ($n = 0; $n < $lastWeek; $n++){
+          print("<td></td>");
+        }
+
+        for ($i = 1; $i <= $lastDay; $i++){
+          $dateTime = formatDateTime($month, $i, $year);
+
+          if(($year === date("Y")) && ($month === date("n")) && ($i === date("d"))) {
+            print("<td style=\"background-color:#F4FA58\">".$i);
+          } else {
+            print("<td>".$i);
+          }
+          print("<ul>");
+          // データベース問い合わせ
+          //$st = $pdo->query("SELECT * FROM schedule WHERE plan='".date("Y-m-d",mktime(0,0,0,$month,$i,$year))."'");
+          $st = $pdo->query("SELECT * FROM schedule WHERE plan='".$dateTime."'");
+          while($schedule = $st->fetch()){
+            $place = h($schedule["place"]);
+            $event = h($schedule["event"]);
+            $subject = h($schedule["subject"]);
+
+            print("<li><a href=\"./confirm.html?datetime=".$dateTime."&amp;place=".$place."&amp;event=".$event."&amp;subject=".$subject."\">".$event.":".$subject."(".$place.")"."</a></li>");
+          }
+          print("</ul>");
+          print("</td>");
+
+          $dayOfTheWeek = getDayOfTheWeek($month, $i, $year);
+          
+          if($dayOfTheWeek == 6){
+            print("</tr>\n");
+            if($i !== $lastDay){
+              print("<tr>");
+            }
+          }
+        }
+
+        for ($i = ($dayOfTheWeek % 7); $i < 6; $i++){
+          print("<td></td>");
+        }
+
+        if($lastWeek != 6){
+          print("\n</tr>\n");
+        }
+
+        print("</table>\n");
+        ?>
+    </body>
+</html>

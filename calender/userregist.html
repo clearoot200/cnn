@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>ユーザー管理</title>
+        <meta http-equiv="content-type" charset="utf-8">
+        <?php
+        session_start();
+        require_once("common.php");
+        
+        // データベースの準備
+        try{
+          $pdo = DBConnection();
+        } catch(Exception $e) {
+          print("エラー：" . $e->getMessage());
+        }
+        ?>
+    </head>
+    <body>
+        <h2>ユーザー管理</h2>
+        <p><a href="./calender.html">トップページへ戻る</a></p>
+        <?php
+          print("<table>\n");
+          print("<tr><th>No.</th><th>ユーザーID</th><th>パスワード</th><th></th></tr>\n");
+          $st = $pdo->query("SELECT * FROM login");
+
+          $id=1;
+          while($user = $st->fetch()){
+            print("<tr>\n");
+            print("<td>\n");
+            print("<form action=\"updateUser.php\" id=\"row-".h($user["id"])."\" method=\"post\"></form>\n");
+            print("<input type=\"hidden\" name=\"ID\" value=\"".h($user["id"])."\" form=\"row-".h($user["id"])."\">\n");
+            print(h($user["id"])."\n");
+            print("</td>\n");
+            print("<td>\n");
+            if($id == 1) {
+              print("<input type=\"text\" name=\"userID\" value=\"".h($user["name"])."\" form=\"row-".h($user["id"])."\" disabled=\"disabled\">\n");
+            } else {
+              print("<input type=\"text\" name=\"userID\" value=\"".h($user["name"])."\" form=\"row-".h($user["id"])."\">\n");
+            }
+            print("<input type=\"hidden\" name=\"userIDhidden\" value=\"".h($user["name"])."\" form=\"row-".h($user["id"])."\">\n");
+            print("</td>\n");
+            print("<td>\n");
+            if($id == 1) {
+              print("<input type=\"password\" name=\"password\" form=\"row-".h($user["id"])."\" disabled=\"disabled\">\n");
+            } else {
+              print("<input type=\"password\" name=\"password\" form=\"row-".h($user["id"])."\">\n");
+            }
+            print("</td>\n");
+            print("<td>\n");
+            if($id != 1){
+              print("<input type=\"submit\" form=\"row-".h($user["id"])."\" name=\"update\" value=\"更新\">\n");
+              print("<input type=\"submit\" form=\"row-".h($user["id"])."\" name=\"delete\" value=\"削除\">\n");
+            }
+            print("</td>\n");
+            print("</tr>\n");
+            $id++;
+          }
+
+          print("<tr>\n");
+          print("<td>\n");
+          print("<form action=\"registUser.php\" id=\"newAccount\" method=\"post\"></form>\n");
+          //print("<input type=\"hidden\" name=\"ID\" value=\"".$id."\" form=\"newAccount\">\n");
+          print("</td>\n");
+          print("<td>\n");
+          print("<input type=\"text\" name=\"userID\" form=\"newAccount\">\n");
+          print("</td>\n");
+          print("<td>\n");
+          print("<input type=\"password\" name=\"password\" form=\"newAccount\">\n");
+          print("</td>\n");
+          print("<td>\n");
+          print("<input type=\"submit\" form=\"newAccount\" name=\"insert\"value=\"追加\">\n");
+          print("</td>\n");
+          print("</tr>\n");
+        ?>
+    </body>
+</html>

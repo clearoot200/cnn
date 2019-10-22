@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>スケジュール登録</title>
+        <meta http-equiv="content-type" charset="utf-8">
+        <?php
+        session_start();
+        require_once("common.php");
+        
+        loginCheck();
+        ?>
+    </head>
+    <body>
+        <h2>スケジュール登録</h2>
+        <p><button type="button" onclick="history.back()">戻る</button></p>
+        <?php
+            if((isset($_SESSION["errorMessage"]))&&(!empty($_SESSION["errorMessage"]))){
+                print("<p><h4>".$_SESSION["errorMessage"]."</h4></p>\n");
+            }
+        ?>
+        <form action="regist.php" method="post">
+            <h5>日時</h5>
+            <p><select name="year">
+            <?php
+
+                $year = date("Y");
+                $maxYear = 10;
+    
+                for($i = $year - 5;$i < $maxYear + $year; $i++){
+                    if($i == date("Y")){
+                        print("<option value=\"".$i."\" selected>".$i."</option>\n");
+                    } else {
+                        print("<option value=\"".$i."\">".$i."</option>\n");
+                    }
+                }
+            ?>
+            </select>年
+            <select name="month">
+            <?php
+               $maxMonth = 12;
+    
+                for($i = 1;$i <= $maxMonth; $i++){
+                    if($i == date("n")){
+                        print("<option value=\"".$i."\" selected>".$i."</option>\n");
+                    } else {
+                        print("<option value=\"".$i."\">".$i."</option>\n");
+                    }
+                }
+            ?>
+            </select>月
+            <select name="day">
+            <?php
+                $maxDay = 31;
+            
+                for($i = 1;$i <= $maxDay; $i++){
+                    if($i == date("d")){
+                        print("<option value=\"".$i."\" selected>".$i."</option>\n");
+                    } else {
+                        print("<option value=\"".$i."\">".$i."</option>\n");
+                    }
+                }
+            ?>
+            </select>日
+            </p>
+            <h5>場所</h5>
+                <p><input type="text" name="place"></p>
+            <h5>イベント</h5>
+                <p><input type="text" name="event"></p>
+            <h5>件名</h5>
+                <p><input type="text" name="subject"></p>
+            <h5>メモ</h5>
+                <p><textarea type="comment" cols="50" row="5"name="remark"></textarea><br></p>
+                <input type="submit" name="submit" value="登録">
+        </form>
+    </body>
+</html>
